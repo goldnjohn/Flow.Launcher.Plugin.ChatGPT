@@ -1,31 +1,44 @@
 using System;
 using System.Collections.Generic;
+using System.Windows.Controls;
+using Flow.Launcher.Plugin.ChatGPT.ViewModels;
+using Flow.Launcher.Plugin.ChatGPT.Views;
 
 namespace Flow.Launcher.Plugin.ChatGPT;
 
-public class ChatGPT : IPlugin, IPluginI18n, IResultUpdated
+public class ChatGPT : IPlugin, IPluginI18n, ISettingProvider, IContextMenu
 {
     private PluginInitContext _context;
     
+    private Settings _settings;
+    
+    private SettingsViewModel _viewModel;
+    
+    private static readonly List<Result> EmptyResults = new();
+
     private readonly string _chatGptUrl = "https://chatgpt.com/?prompt=";
 
     public void Init(PluginInitContext context)
     {
         _context = context;
+        _settings = context.API.LoadSettingJsonStorage<Settings>();
+        _viewModel = new SettingsViewModel(_settings);
     }
 
     public List<Result> Query(Query query)
     {
-        if (string.IsNullOrWhiteSpace(query.Search) || string.IsNullOrWhiteSpace(query.SecondToEndSearch))
-            return _GetDefaultHotKeys();
-
-        var postArgs = query.FirstSearch.ToLower() switch
+        if (string.IsNullOrWhiteSpace(query.Search))
         {
-            Settings.TemporaryCommand =>  "&temporary-chat=true",
-            _ => ""
-        };
+            return EmptyResults;
+        }
         
-        return new List<Result>()
+        var postArgs = "";
+        if (_settings.TemporaryChat)
+        {
+            postArgs = "&temporary-chat=true";
+        }
+        
+        return new List<Result>
         {
             new ()
             {
@@ -33,45 +46,13 @@ public class ChatGPT : IPlugin, IPluginI18n, IResultUpdated
                 IcoPath = "Images/app.ico",
                 Action = _ =>
                 {
-                    _context.API.OpenUrl($"{_chatGptUrl}{Uri.EscapeDataString(query.SecondToEndSearch)}{postArgs}");
-                    return false;
+                    _context.API.OpenUrl($"{_chatGptUrl}{Uri.EscapeDataString(query.Search)}{postArgs}");
+                    return true;
                 }
             }
         };
     }
 
-    private List<Result> _GetDefaultHotKeys()
-    {
-        return new List<Result>()
-        {
-            new ()
-            {
-                Title = Settings.NormalCommand,
-                IcoPath = "Images/app.ico",
-                AutoCompleteText = $"{_context.CurrentPluginMetadata.ActionKeyword} {Settings.NormalCommand} ",
-                Action = _ =>
-                {
-                    _context.API.ChangeQuery(
-                        $"{_context.CurrentPluginMetadata.ActionKeyword} {Settings.NormalCommand} ");
-                    return false;
-                }
-            },
-            new ()
-            {
-                Title = Settings.TemporaryCommand,
-                SubTitle = _context.API.GetTranslation("plugin_chatgpt_temporary_chat"),
-                IcoPath = "Images/app.ico",
-                AutoCompleteText = $"{_context.CurrentPluginMetadata.ActionKeyword} {Settings.TemporaryCommand} ",
-                Action = _ =>
-                {
-                    _context.API.ChangeQuery(
-                        $"{_context.CurrentPluginMetadata.ActionKeyword} {Settings.TemporaryCommand} ");
-                    return false;
-                }
-            }
-        };
-    }
-    
     public string GetTranslatedPluginTitle()
     {
         return _context.API.GetTranslation("plugin_chatgpt_plugin_name");
@@ -82,5 +63,17 @@ public class ChatGPT : IPlugin, IPluginI18n, IResultUpdated
         return _context.API.GetTranslation("plugin_chatgpt_plugin_description");
     }
 
-    public event ResultUpdatedEventHandler ResultsUpdated;
+    public Control CreateSettingPanel()
+    {
+        return new SettingsControl(_viewModel);
+    }
+
+    public List<Result> LoadContextMenus(Result selectedResult)
+    {
+        var results = new List<Result>
+        {
+            Capacity = 0
+        };
+        return results;
+    }
 }

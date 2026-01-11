@@ -1,7 +1,6 @@
 ﻿namespace Flow.Launcher.Plugin.ChatGPT;
 
-internal class Settings
+public class Settings : BaseModel
 {
-    internal const string NormalCommand = "normal";
-    internal const string TemporaryCommand = "temporary";
+    public bool TemporaryChat { get; set; } = false;
 }

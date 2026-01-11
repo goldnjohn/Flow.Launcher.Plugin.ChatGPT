@@ -1,0 +1,2 @@
+dotnet publish Flow.Launcher.Plugin.ChatGPT -c Release -r win-x64 --no-self-contained
+Compress-Archive -LiteralPath Flow.Launcher.Plugin.ChatGPT/bin/Release/win-x64/publish -DestinationPath Flow.Launcher.Plugin.ChatGPT/bin/ChatGPT.zip -Force

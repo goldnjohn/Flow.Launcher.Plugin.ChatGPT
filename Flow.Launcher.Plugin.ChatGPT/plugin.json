@@ -1,0 +1,12 @@
+{
+    "ID": "6920034425C14101A0F90335130AE3CE",
+    "ActionKeyword": "ai",
+    "Name": "ChatGPT",
+    "Description": "Automatically open ChatGPT in the browser with your prompt",
+    "Author": "ruinmi",
+    "Version": "1.0.0",
+    "Language": "csharp",
+    "Website": "https://github.com/ruinmi/Flow.Launcher.Plugin.ChatGPT",
+    "IcoPath": "Images\\app.ico",
+    "ExecuteFileName": "Flow.Launcher.Plugin.ChatGPT.dll"
+}
